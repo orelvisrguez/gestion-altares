@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Altar } from "../types";
 import { formatRemainingTime } from "../utils/parser";
-import { Shield, ShieldAlert, Edit, Trash2, Zap, ArrowRight, UserCheck, RefreshCcw, Landmark } from "lucide-react";
+import { Shield, ShieldAlert, Edit, Trash2, Zap, ArrowRight, UserCheck, RefreshCcw, Landmark, MapPin } from "lucide-react";
 
 interface AltarCardProps {
   altar: Altar;
@@ -86,6 +86,16 @@ export default function AltarCard({
         <h4 className="text-lg font-serif font-medium text-[#f4f4f5] tracking-wide line-clamp-1 mb-2">
           {altar.name}
         </h4>
+
+        {/* Coordinates */}
+        {(altar.x !== undefined && altar.y !== undefined && altar.x !== null && altar.y !== null) && (
+          <div className="flex items-center gap-1.5 text-[11px] text-[#a8a29e] font-mono bg-[#18181b] w-max px-2 py-0.5 rounded border border-[#27272a] mb-3">
+            <MapPin className="w-3.5 h-3.5 text-gold-clan" />
+            <span>X: <span className="text-[#f4f4f5]">{altar.x}</span></span>
+            <span className="text-[#3f3f46]">|</span>
+            <span>Y: <span className="text-[#f4f4f5]">{altar.y}</span></span>
+          </div>
+        )}
 
         {/* Buff/Effect Description */}
         <div className="bg-[#18181b]/50 p-2.5 rounded border border-[#27272a]/60 mb-3.5 min-h-[44px]">
