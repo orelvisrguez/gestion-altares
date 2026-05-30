@@ -10,6 +10,8 @@ export interface Altar {
   createdAt: string; // ISO Timestamp
   updatedAt: string; // ISO Timestamp
   notes?: string;
+  x?: number;
+  y?: number;
 }
 
 export interface AllianceStat {

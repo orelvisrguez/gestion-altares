@@ -17,6 +17,8 @@ export default function AltarForm({ altar, onSave, onClose }: AltarFormProps) {
   const [occupiedBy, setOccupiedBy] = useState("");
   const [protectionTimeInput, setProtectionTimeInput] = useState("");
   const [notes, setNotes] = useState("");
+  const [xPos, setXPos] = useState<number | "">("");
+  const [yPos, setYPos] = useState<number | "">("");
 
   const [parseIndicator, setParseIndicator] = useState<{ success: boolean; msg: string } | null>(null);
 
@@ -30,6 +32,8 @@ export default function AltarForm({ altar, onSave, onClose }: AltarFormProps) {
       setOccupiedBy(altar.occupiedBy || "");
       setProtectionTimeInput(altar.protectionTimeInput || "");
       setNotes(altar.notes || "");
+      setXPos(altar.x !== undefined ? altar.x : "");
+      setYPos(altar.y !== undefined ? altar.y : "");
     } else {
       // Create presets
       setName("");
@@ -39,6 +43,8 @@ export default function AltarForm({ altar, onSave, onClose }: AltarFormProps) {
       setOccupiedBy("");
       setProtectionTimeInput("");
       setNotes("");
+      setXPos("");
+      setYPos("");
     }
   }, [altar]);
 
@@ -86,7 +92,9 @@ export default function AltarForm({ altar, onSave, onClose }: AltarFormProps) {
       occupiedBy: (occupiedBy.trim() || "DESCONOCIDO").toUpperCase(),
       protectionTimeInput: protectionTimeInput.trim(),
       protectionExpiresAt: altar ? altar.protectionExpiresAt : null, // parent app will recal if needed
-      notes: notes.trim()
+      notes: notes.trim(),
+      x: xPos !== "" ? Number(xPos) : undefined,
+      y: yPos !== "" ? Number(yPos) : undefined
     });
 
     onClose();
@@ -130,6 +138,34 @@ export default function AltarForm({ altar, onSave, onClose }: AltarFormProps) {
               placeholder="Ej: Gremio de Constructores (sin nivel)"
               className="w-full bg-[#18181b] border border-[#27272a] focus:border-gold-clan rounded px-3 py-2 text-xs font-mono text-[#f4f4f5] outline-none transition-all"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Coordinates */}
+            <div>
+              <label className="text-[10px] font-mono font-bold text-[#71717a] uppercase tracking-widest block mb-1.5">
+                Coordenada X del Mapa
+              </label>
+              <input
+                type="number"
+                value={xPos}
+                onChange={(e) => setXPos(e.target.value === "" ? "" : Number(e.target.value))}
+                placeholder="Ej. 520"
+                className="w-full bg-[#18181b] border border-[#27272a] focus:border-gold-clan rounded px-3 py-2 text-xs font-mono text-[#f4f4f5] uppercase outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono font-bold text-[#71717a] uppercase tracking-widest block mb-1.5">
+                Coordenada Y del Mapa
+              </label>
+              <input
+                type="number"
+                value={yPos}
+                onChange={(e) => setYPos(e.target.value === "" ? "" : Number(e.target.value))}
+                placeholder="Ej. 1100"
+                className="w-full bg-[#18181b] border border-[#27272a] focus:border-gold-clan rounded px-3 py-2 text-xs font-mono text-[#f4f4f5] uppercase outline-none transition-all"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

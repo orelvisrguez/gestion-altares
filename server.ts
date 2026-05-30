@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
@@ -26,7 +27,9 @@ async function initDB() {
       protectionExpiresAt TEXT,
       createdAt TEXT,
       updatedAt TEXT,
-      notes TEXT
+      notes TEXT,
+      x INTEGER,
+      y INTEGER
     )
   `);
 
@@ -57,6 +60,8 @@ async function initDB() {
   try { await db.execute("ALTER TABLE audit_logs ADD COLUMN alliance TEXT"); } catch (e) {}
   try { await db.execute("ALTER TABLE audit_logs ADD COLUMN action TEXT"); } catch (e) {}
   try { await db.execute("ALTER TABLE audit_logs ADD COLUMN details TEXT"); } catch (e) {}
+  try { await db.execute("ALTER TABLE altars ADD COLUMN x INTEGER"); } catch (e) {}
+  try { await db.execute("ALTER TABLE altars ADD COLUMN y INTEGER"); } catch (e) {}
 }
 
 async function logAudit(db: any, params: { altarId?: string, action: string, previousOccupant?: string, newOccupant?: string, details?: string, player: string, alliance: string }) {
@@ -101,14 +106,14 @@ async function startServer() {
   });
 
   app.post("/api/altars", async (req, res) => {
-    const { id, name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, createdAt, updatedAt, notes } = req.body;
+    const { id, name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, createdAt, updatedAt, notes, x, y } = req.body;
     const author = getAuthor(req);
     try {
       await db.execute({
-        sql: `INSERT INTO altars (id, name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, createdAt, updatedAt, notes) 
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO altars (id, name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, createdAt, updatedAt, notes, x, y) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
-          id || null, name || null, level || null, effect || null, JSON.stringify(neighbors || []), occupiedBy || null, protectionTimeInput || null, protectionExpiresAt || null, createdAt || null, updatedAt || null, notes || ""
+          id || null, name || null, level || null, effect || null, JSON.stringify(neighbors || []), occupiedBy || null, protectionTimeInput || null, protectionExpiresAt || null, createdAt || null, updatedAt || null, notes || "", x || null, y || null
         ]
       });
       
@@ -129,7 +134,7 @@ async function startServer() {
 
   app.put("/api/altars/:id", async (req, res) => {
     const { id } = req.params;
-    const { name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, updatedAt, notes } = req.body;
+    const { name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, updatedAt, notes, x, y } = req.body;
     const author = getAuthor(req);
     try {
       // Fetch current to see if occupant changed
@@ -138,10 +143,10 @@ async function startServer() {
 
       await db.execute({
         sql: `UPDATE altars SET 
-              name = ?, level = ?, effect = ?, neighbors = ?, occupiedBy = ?, protectionTimeInput = ?, protectionExpiresAt = ?, updatedAt = ?, notes = ?
+              name = ?, level = ?, effect = ?, neighbors = ?, occupiedBy = ?, protectionTimeInput = ?, protectionExpiresAt = ?, updatedAt = ?, notes = ?, x = ?, y = ?
               WHERE id = ?`,
         args: [
-          name || null, level || null, effect || null, JSON.stringify(neighbors || []), occupiedBy || null, protectionTimeInput || null, protectionExpiresAt || null, updatedAt || null, notes || "", id || null
+          name || null, level || null, effect || null, JSON.stringify(neighbors || []), occupiedBy || null, protectionTimeInput || null, protectionExpiresAt || null, updatedAt || null, notes || "", x || null, y || null, id || null
         ]
       });
 
@@ -202,11 +207,11 @@ async function startServer() {
       
       for (const altar of altars) {
         queries.push({
-          sql: `INSERT INTO altars (id, name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, createdAt, updatedAt, notes) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          sql: `INSERT INTO altars (id, name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, createdAt, updatedAt, notes, x, y) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           args: [
             altar.id || null, altar.name || null, altar.level || null, altar.effect || null, JSON.stringify(altar.neighbors || []), altar.occupiedBy || null, 
-            altar.protectionTimeInput || null, altar.protectionExpiresAt || null, altar.createdAt || null, altar.updatedAt || null, altar.notes || ""
+            altar.protectionTimeInput || null, altar.protectionExpiresAt || null, altar.createdAt || null, altar.updatedAt || null, altar.notes || "", altar.x || null, altar.y || null
           ]
         });
       }
