@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Altar } from "../types";
 import { formatRemainingTime } from "../utils/parser";
 import { Shield, ShieldAlert, Edit, Trash2, Zap, ArrowRight, UserCheck, RefreshCcw, Landmark, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface AltarCardProps {
   altar: Altar;
@@ -54,7 +55,14 @@ export default function AltarCard({
   const QUICK_ALLIANCES = ["LTS", "UNR", "TDS", "LAT", "AGE"];
 
   return (
-    <div className={`relative bg-[#111113] border ${isProtected ? "border-[#27272a] hover:border-gold-clan" : "border-[#27272a] hover:border-rose-500/40"} rounded-lg p-5 flex flex-col justify-between shadow-xl transition-all hover:-translate-y-0.5`}>
+    <motion.div 
+      layout
+      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className={`relative bg-[#111113] border ${isProtected ? "border-[#27272a] hover:border-gold-clan" : "border-[#27272a] hover:border-rose-500/40"} rounded-xl p-5 flex flex-col justify-between shadow-2xl transition-colors`}
+    >
       {/* Background visual water mark */}
       <div className="absolute top-2 right-2 opacity-[0.03] select-none pointer-events-none">
         <Landmark className="w-24 h-24 text-white" />
@@ -218,6 +226,6 @@ export default function AltarCard({
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

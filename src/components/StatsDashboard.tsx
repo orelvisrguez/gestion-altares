@@ -57,7 +57,7 @@ export default function StatsDashboard({ altars, onSelectAlliance, selectedAllia
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       {/* Col 1: Counters (Bento box style) */}
-      <div className="bg-[#0c0c0e] border border-[#27272a] rounded-lg p-5 flex flex-col justify-between shadow-xl">
+      <div className="bg-[#0c0c0e]/80 backdrop-blur-md border border-[#27272a]/70 rounded-xl p-5 flex flex-col justify-between shadow-[0_0_30px_rgba(0,0,0,0.5)]">
         <div>
           <h3 className="text-xs font-serif font-semibold text-[#e2e2e8] uppercase tracking-widest mb-4 flex items-center gap-1.5">
             <Castle className="w-4 h-4 text-gold-clan" /> RESUMEN DE CONTROL
@@ -95,7 +95,7 @@ export default function StatsDashboard({ altars, onSelectAlliance, selectedAllia
       </div>
 
       {/* Col 2: Recharts Bar Chart of Occupancy */}
-      <div className="bg-[#0c0c0e] border border-[#27272a] rounded-lg p-5 shadow-xl flex flex-col justify-between">
+      <div className="bg-[#0c0c0e]/80 backdrop-blur-md border border-[#27272a]/70 rounded-xl p-5 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col justify-between">
         <div>
           <h3 className="text-xs font-serif font-semibold text-[#e2e2e8] uppercase tracking-widest mb-1 flex items-center gap-1.5">
             <Award className="w-4 h-4 text-gold-clan" /> ALTARES POR ALIANZA
@@ -177,7 +177,7 @@ export default function StatsDashboard({ altars, onSelectAlliance, selectedAllia
       </div>
 
       {/* Col 3: Active Buffs Breakdown */}
-      <div className="bg-[#0c0c0e] border border-[#27272a] rounded-lg p-5 shadow-xl flex flex-col justify-between max-h-[220px] overflow-y-auto custom-scrollbar">
+      <div className="bg-[#0c0c0e]/80 backdrop-blur-md border border-[#27272a]/70 rounded-xl p-5 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col justify-between max-h-[220px] overflow-y-auto custom-scrollbar">
         <h3 className="text-xs font-serif font-semibold text-[#e2e2e8] uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-[#27272a] pb-2">
           <CheckCircle2 className="w-4 h-4 text-gold-clan" /> EFECTOS ACTIVOS DE ALIANZA
         </h3>

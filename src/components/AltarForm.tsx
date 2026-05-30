@@ -106,8 +106,8 @@ export default function AltarForm({ altar, onSave, onClose }: AltarFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#08080a]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0c0c0e] border border-[#27272a] rounded-lg w-full max-w-lg flex flex-col shadow-2xl animate-fade-in text-[#e4e4e7]">
+    <div className="fixed inset-0 bg-[#08080a]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="bg-[#0c0c0e]/85 backdrop-blur-2xl border border-[#27272a]/70 rounded-xl w-full max-w-lg flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8),0_0_15px_rgba(180,140,62,0.1)] animate-fade-in text-[#e4e4e7]">
         
         {/* Header */}
         <div className="p-5 border-b border-[#27272a] flex items-center justify-between">

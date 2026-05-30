@@ -7,7 +7,11 @@ import {
   Users,
   MapPin,
   Swords,
+  Maximize,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 interface MapVisualizationProps {
   altars: Altar[];
@@ -442,20 +446,8 @@ export default function MapVisualization({
         </div>
       ) : activeTab === "map" ? (
         <div className="relative w-full h-[500px] border border-[#27272a] rounded-lg bg-[#08080a] overflow-hidden group">
-          {/* Grid background */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(#27272a 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-              backgroundPosition: "center center",
-              opacity: 0.2,
-            }}
-          ></div>
-
           {/* Axis indicators */}
-          <div className="absolute top-2 left-2 flex gap-2">
+          <div className="absolute top-2 left-2 flex gap-2 z-20">
             <div className="bg-[#111113] border border-[#27272a] rounded px-2 py-1 text-[10px] font-mono text-[#71717a]">
               Y
             </div>
@@ -464,8 +456,40 @@ export default function MapVisualization({
             </div>
           </div>
 
-          <div className="absolute inset-0 overflow-auto custom-scrollbar p-20 cursor-move">
-            <div className="relative w-[1200px] h-[1200px] mx-auto pointer-events-none">
+          <TransformWrapper
+            initialScale={1}
+            minScale={0.5}
+            maxScale={4}
+            centerOnInit={true}
+            wheel={{ step: 0.1 }}
+          >
+            {({ zoomIn, zoomOut, resetTransform }) => (
+              <>
+                <div className="absolute top-2 right-2 flex gap-1.5 z-20">
+                  <button onClick={() => zoomIn()} className="bg-[#111113] hover:bg-[#18181b] border border-[#27272a] rounded p-1.5 text-[#a1a1aa] hover:text-white transition-colors cursor-pointer">
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => zoomOut()} className="bg-[#111113] hover:bg-[#18181b] border border-[#27272a] rounded p-1.5 text-[#a1a1aa] hover:text-white transition-colors cursor-pointer">
+                    <ZoomOut className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => resetTransform()} className="bg-[#111113] hover:bg-[#18181b] border border-[#27272a] rounded p-1.5 text-[#a1a1aa] hover:text-white transition-colors cursor-pointer">
+                    <Maximize className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+                  <div className="relative w-[1200px] h-[1200px] bg-[#08080a]">
+                    {/* Grid background */}
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(#27272a 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px)",
+                        backgroundSize: "20px 20px",
+                        backgroundPosition: "center center",
+                        opacity: 0.2,
+                      }}
+                    ></div>
               {analyzedAltars.map((a) => {
                 if (a.x === undefined || a.y === undefined) return null;
                 const style = getStyle(a.occupiedBy);
@@ -516,10 +540,13 @@ export default function MapVisualization({
                   });
                 })}
               </svg>
-            </div>
-          </div>
+                  </div>
+                </TransformComponent>
+              </>
+            )}
+          </TransformWrapper>
 
-          <div className="absolute bottom-4 right-4 bg-[#111113] border border-[#27272a] p-3 rounded-lg flex flex-col gap-2 shadow-lg">
+          <div className="absolute bottom-4 right-4 bg-[#111113] border border-[#27272a] p-3 rounded-lg flex flex-col gap-2 shadow-lg z-20">
             <div className="flex items-center gap-2 text-[10px] font-mono text-[#a1a1aa]">
               <div className="w-2 h-2 rotate-45 bg-emerald-500"></div> Protegido
             </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Altar, Battle, AuditLog } from "./types";
+import { motion, AnimatePresence } from "framer-motion";
 import { INITIAL_ALTAR_PRESETS, calculateExpiration, formatRemainingTime } from "./utils/parser";
 import StatsDashboard from "./components/StatsDashboard";
 import MapVisualization from "./components/MapVisualization";
@@ -132,14 +133,31 @@ export default function App() {
     loadAuditLogs();
   }, [apiFetch]);
 
-  const refreshAuditLogs = async () => {
+  // Polling for real-time sync (Vercel friendly instead of WebSockets)
+  useEffect(() => {
+    const syncInterval = setInterval(() => {
+      apiFetch("/api/altars")
+        .then((res) => res.json())
+        .then((data) => setAltars(data))
+        .catch((err) => console.error("Sync error:", err));
+      
+      apiFetch("/api/battles")
+        .then((res) => res.json())
+        .then((data) => setBattles(data))
+        .catch((err) => console.error("Sync error:", err));
+    }, 15000); // Poll every 15 seconds
+
+    return () => clearInterval(syncInterval);
+  }, []);
+
+  const refreshAuditLogs = useCallback(() => {
     try {
-      const res = await apiFetch("/api/audit_logs");
-      if (res.ok) setAuditLogs(await res.json());
+      const res = apiFetch("/api/audit_logs");
+      res.then(r => { if (r.ok) r.json().then(d => setAuditLogs(d)) });
     } catch (err) {
       console.error(err);
     }
-  };
+  }, []);
 
   // Notification State
   const notifiedAltarsRef = useRef<Set<string>>(new Set());
@@ -551,8 +569,15 @@ export default function App() {
           </button>
         </div>
 
+        <AnimatePresence mode="wait">
         {activeTab === "altars" ? (
-          <>
+          <motion.div 
+            key="altars"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
           {/* Banner alert if empty */}
         {altars.length === 0 && (
           <div className="bg-yellow-950/25 border border-yellow-900/30 p-4 rounded-2xl text-yellow-300 text-xs mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -863,8 +888,15 @@ export default function App() {
             </div>
           )}
         </div>
-          </>
+        </motion.div>
         ) : activeTab === "battles" ? (
+          <motion.div 
+            key="battles"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
           <BattlePlanner 
             battles={battles} 
             altars={altars}
@@ -912,9 +944,19 @@ export default function App() {
               }
             }}
           />
+          </motion.div>
         ) : activeTab === "audit" ? (
-          <AuditLogViewer logs={auditLogs} displayTz={displayTz} />
+          <motion.div 
+            key="audit"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <AuditLogViewer logs={auditLogs} displayTz={displayTz} />
+          </motion.div>
         ) : null}
+        </AnimatePresence>
       </main>
 
       {/* Manual creation / update Form Modal */}
