@@ -85,8 +85,17 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Routes
-  app.get("/api/altars", async (req, res) => {
+  // Request logger
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    next();
+  });
+
+  // API Router
+  const apiRouter = express.Router();
+
+  // Altar Routes
+  apiRouter.get("/altars", async (req, res) => {
     try {
       const result = await db.execute("SELECT * FROM altars");
       const altars = result.rows.map(row => ({
@@ -100,7 +109,27 @@ async function startServer() {
     }
   });
 
-  app.post("/api/altars", async (req, res) => {
+  apiRouter.get("/altars/:id", async (req, res) => {
+    try {
+      const result = await db.execute({
+        sql: "SELECT * FROM altars WHERE id = ?",
+        args: [req.params.id]
+      });
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Altar not found" });
+      }
+      const altar = {
+        ...result.rows[0],
+        neighbors: JSON.parse(result.rows[0].neighbors as string || "[]")
+      };
+      res.json(altar);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to fetch altar" });
+    }
+  });
+
+  apiRouter.post("/altars", async (req, res) => {
     const { id, name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, createdAt, updatedAt, notes } = req.body;
     const author = getAuthor(req);
     try {
@@ -127,7 +156,7 @@ async function startServer() {
     }
   });
 
-  app.put("/api/altars/:id", async (req, res) => {
+  apiRouter.put("/altars/:id", async (req, res) => {
     const { id } = req.params;
     const { name, level, effect, neighbors, occupiedBy, protectionTimeInput, protectionExpiresAt, updatedAt, notes } = req.body;
     const author = getAuthor(req);
@@ -167,7 +196,7 @@ async function startServer() {
     }
   });
 
-  app.delete("/api/altars/:id", async (req, res) => {
+  apiRouter.delete("/altars/:id", async (req, res) => {
     const { id } = req.params;
     const author = getAuthor(req);
     try {
@@ -188,7 +217,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/altars/bulk", async (req, res) => {
+  apiRouter.post("/altars/bulk", async (req, res) => {
     const altars = req.body;
     const author = getAuthor(req);
     if (!Array.isArray(altars)) {
@@ -196,8 +225,6 @@ async function startServer() {
     }
     
     try {
-      // Very basic bulk insert by deleting all and inserting.
-      // Might want to make this atomic with a transaction in production, but libsql handles batches.
       const queries = [{ sql: "DELETE FROM altars", args: [] }];
       
       for (const altar of altars) {
@@ -211,7 +238,6 @@ async function startServer() {
         });
       }
       
-      // Execute in batch
       await db.batch(queries, "write");
 
       await logAudit(db, {
@@ -228,8 +254,8 @@ async function startServer() {
     }
   });
 
-  // Battles API Routes
-  app.get("/api/battles", async (req, res) => {
+  // Battle Routes
+  apiRouter.get("/battles", async (req, res) => {
     try {
       const result = await db.execute("SELECT * FROM battles");
       res.json(result.rows);
@@ -239,23 +265,23 @@ async function startServer() {
     }
   });
 
-  app.get("/api/audit_logs", async (req, res) => {
+  apiRouter.get("/battles/:id", async (req, res) => {
     try {
-      const result = await db.execute(`
-        SELECT a.id, a.altarId, al.name as altarName, a.previousOccupant, a.newOccupant, a.timestamp, a.player, a.alliance, a.action, a.details 
-        FROM audit_logs a 
-        LEFT JOIN altars al ON a.altarId = al.id
-        ORDER BY a.timestamp DESC
-        LIMIT 100
-      `);
-      res.json(result.rows);
+      const result = await db.execute({
+        sql: "SELECT * FROM battles WHERE id = ?",
+        args: [req.params.id]
+      });
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Battle not found" });
+      }
+      res.json(result.rows[0]);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Failed to fetch audit logs" });
+      res.status(500).json({ error: "Failed to fetch battle" });
     }
   });
 
-  app.post("/api/battles", async (req, res) => {
+  apiRouter.post("/battles", async (req, res) => {
     const { id, altarId, startTime, attackingAlliance, defendingAlliance, status, notes, createdAt, updatedAt } = req.body;
     const author = getAuthor(req);
     try {
@@ -282,7 +308,7 @@ async function startServer() {
     }
   });
 
-  app.put("/api/battles/:id", async (req, res) => {
+  apiRouter.put("/battles/:id", async (req, res) => {
     const { id } = req.params;
     const { altarId, startTime, attackingAlliance, defendingAlliance, status, notes, updatedAt } = req.body;
     const author = getAuthor(req);
@@ -311,7 +337,7 @@ async function startServer() {
     }
   });
 
-  app.delete("/api/battles/:id", async (req, res) => {
+  apiRouter.delete("/battles/:id", async (req, res) => {
     const { id } = req.params;
     const author = getAuthor(req);
     try {
@@ -331,6 +357,31 @@ async function startServer() {
     }
   });
 
+  // Audit Log Routes
+  apiRouter.get("/audit_logs", async (req, res) => {
+    try {
+      const result = await db.execute(`
+        SELECT a.id, a.altarId, al.name as altarName, a.previousOccupant, a.newOccupant, a.timestamp, a.player, a.alliance, a.action, a.details
+        FROM audit_logs a
+        LEFT JOIN altars al ON a.altarId = al.id
+        ORDER BY a.timestamp DESC
+        LIMIT 100
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to fetch audit logs" });
+    }
+  });
+
+  // Catch-all for API 404s
+  apiRouter.use((req, res) => {
+    res.status(404).json({ error: "API route not found" });
+  });
+
+  // Use the API Router
+  app.use("/api", apiRouter);
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -342,7 +393,7 @@ async function startServer() {
     // Production: serve built static files
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
+    app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
