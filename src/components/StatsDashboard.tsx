@@ -105,7 +105,7 @@ export default function StatsDashboard({ altars, onSelectAlliance, selectedAllia
 
         <div className="h-32 w-full">
           {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <XAxis 
                   dataKey="name" 
